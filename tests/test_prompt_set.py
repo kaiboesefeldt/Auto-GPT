@@ -1,6 +1,8 @@
+import os
 from unittest import TestCase
+from unittest.mock import Mock
 
-from autogpt.prompts.prompt_set import PromptSet, FilePromptSet
+from autogpt.prompts.prompt_set import PromptSet, FilePromptSet, get_configured_prompt_set
 import tempfile
 
 
@@ -49,4 +51,21 @@ class TestPromptSet(TestCase):
             self.assertEquals(
                 "Before middle after",
                 sut.generate_prompt_string("template", insert="middle"),
+            )
+
+    def test_get_configured_prompt_set(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with open(os.path.join(temp_dir, "prompt_de.yaml"), "w") as temp_file:
+                temp_file.write(
+                    """prompts:
+                        - simple: Dies ist ein einfacher Text"""
+                )
+                temp_file.flush()
+
+            cfg = Mock()
+            cfg.i18n_prompts_dir = temp_dir
+            cfg.prompt_language = "de"
+            sut = get_configured_prompt_set(cfg)
+            self.assertEquals(
+                "Dies ist ein einfacher Text", sut.generate_prompt_string("simple")
             )

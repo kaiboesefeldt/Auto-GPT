@@ -1,5 +1,9 @@
 from typing import Dict
+
+import os
 import yaml
+
+from autogpt.config import Config
 
 
 class PromptSet:
@@ -55,3 +59,18 @@ class FilePromptSet(PromptSet):
             for d in input_data:
                 prompts.update(d)
         super().__init__(prompts)
+
+
+def get_configured_prompt_set(cfg: Config) -> PromptSet:
+    """
+    Get the configured prompt set.
+    Args:
+         cfg (Config): The configuration where the prompt set is configured
+
+     Returns:
+         The prompt set at the configured location
+    """
+    prompt_set_path = os.path.join(
+        cfg.i18n_prompts_dir, "prompt_" + cfg.prompt_language + ".yaml"
+    )
+    return FilePromptSet(prompt_set_path)

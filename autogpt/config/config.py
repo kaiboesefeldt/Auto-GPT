@@ -156,6 +156,9 @@ class Config(metaclass=Singleton):
         else:
             self.plugins_denylist = []
 
+        self.i18n_prompts_dir = os.getenv("I18N_PROMPTS_DIR", os.path.join("i18n", "prompts"))
+        self.prompt_language = os.getenv("PROMPT_LANGUAGE", "en")
+
     def get_azure_deployment_id_for_model(self, model: str) -> str:
         """
         Returns the relevant deployment id for the model specified.
