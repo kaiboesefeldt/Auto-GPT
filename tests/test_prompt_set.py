@@ -26,20 +26,27 @@ class TestPromptSet(TestCase):
         self.assertEquals("promptSnippet Lalala end", result)
 
     def test_file_prompt_set_ready_snippets_in_yaml_format(self):
-        with tempfile.NamedTemporaryFile(mode='w+', delete=False) as temp_file:
+        with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp_file:
             temp_file.write(
-                '''prompts:
+                """prompts:
                     - simple: This is a simple text
                     - multiLine: |
                         First line
                         second line
-                    - template: Before {insert} after'''
+                    - template: Before {insert} after"""
             )
             file_name = temp_file.name
             temp_file.flush()
 
             print(file_name)
             sut = FilePromptSet(file_name)
-            self.assertEquals("This is a simple text", sut.generate_prompt_string("simple"))
-            self.assertEquals("First line\nsecond line\n", sut.generate_prompt_string("multiLine"))
-            self.assertEquals("Before middle after", sut.generate_prompt_string("template", insert="middle"))
+            self.assertEquals(
+                "This is a simple text", sut.generate_prompt_string("simple")
+            )
+            self.assertEquals(
+                "First line\nsecond line\n", sut.generate_prompt_string("multiLine")
+            )
+            self.assertEquals(
+                "Before middle after",
+                sut.generate_prompt_string("template", insert="middle"),
+            )
