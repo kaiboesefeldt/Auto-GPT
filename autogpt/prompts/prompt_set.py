@@ -88,6 +88,6 @@ def get_configured_prompt_set(cfg: Config) -> PromptSet:
          The prompt set at the configured location
     """
     prompt_set_path = os.path.join(
-        cfg.i18n_prompts_dir, "prompt_" + cfg.prompt_language + ".yaml"
+        cfg.i18n_prompts_dir, "prompts_" + cfg.prompt_language + ".yaml"
     )
     return FilePromptSet(prompt_set_path)

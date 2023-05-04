@@ -12,7 +12,8 @@ from autogpt.configurator import create_config
 from autogpt.logs import logger
 from autogpt.memory import get_memory
 from autogpt.plugins import scan_plugins
-from autogpt.prompts.prompt import DEFAULT_TRIGGERING_PROMPT, construct_main_ai_config
+from autogpt.prompts.prompt import construct_main_ai_config
+from autogpt.prompts.prompt_set import PromptId, get_configured_prompt_set
 from autogpt.utils import (
     get_current_git_branch,
     get_latest_bulletin,
@@ -172,6 +173,7 @@ def run_auto_gpt(
     if cfg.debug_mode:
         logger.typewriter_log("Prompt:", Fore.GREEN, system_prompt)
 
+    prompts = get_configured_prompt_set(cfg)
     agent = Agent(
         ai_name=ai_name,
         memory=memory,
@@ -180,7 +182,7 @@ def run_auto_gpt(
         command_registry=command_registry,
         config=ai_config,
         system_prompt=system_prompt,
-        triggering_prompt=DEFAULT_TRIGGERING_PROMPT,
+        triggering_prompt=prompts.generate_prompt_string(PromptId.DEFAULT_TRIGGERING_PROMPT),
         workspace_directory=workspace_directory,
     )
     agent.start_interaction_loop()

@@ -3,8 +3,8 @@ import pytest
 from autogpt.agent import Agent
 from autogpt.commands.command import CommandRegistry
 from autogpt.config import AIConfig, Config
-from autogpt.memory import LocalCache, NoMemory, get_memory
-from autogpt.prompts.prompt import DEFAULT_TRIGGERING_PROMPT
+from autogpt.memory import NoMemory, get_memory
+from autogpt.prompts.prompt_set import PromptId, get_configured_prompt_set
 from autogpt.workspace import Workspace
 
 
@@ -61,6 +61,7 @@ def browser_agent(agent_test_config, memory_none: NoMemory, workspace: Workspace
 
     system_prompt = ai_config.construct_full_prompt()
 
+    prompts = get_configured_prompt_set(Config())
     agent = Agent(
         ai_name="",
         memory=memory_none,
@@ -69,7 +70,7 @@ def browser_agent(agent_test_config, memory_none: NoMemory, workspace: Workspace
         config=ai_config,
         next_action_count=0,
         system_prompt=system_prompt,
-        triggering_prompt=DEFAULT_TRIGGERING_PROMPT,
+        triggering_prompt=prompts.generate_prompt_string(PromptId.DEFAULT_TRIGGERING_PROMPT),
         workspace_directory=workspace.root,
     )
 
@@ -136,6 +137,7 @@ def memory_management_agent(
 
     system_prompt = ai_config.construct_full_prompt()
 
+    prompts = get_configured_prompt_set(Config())
     agent = Agent(
         ai_name="",
         memory=memory_local_cache,
@@ -144,7 +146,7 @@ def memory_management_agent(
         config=ai_config,
         next_action_count=0,
         system_prompt=system_prompt,
-        triggering_prompt=DEFAULT_TRIGGERING_PROMPT,
+        triggering_prompt=prompts.generate_prompt_string(PromptId.DEFAULT_TRIGGERING_PROMPT),
         workspace_directory=workspace.root,
     )
 
@@ -170,6 +172,7 @@ def get_company_revenue_agent(
 
     system_prompt = ai_config.construct_full_prompt()
     Config().set_continuous_mode(False)
+    prompts = get_configured_prompt_set(Config())
     agent = Agent(
         ai_name="Get-CompanyRevenue",
         memory=memory_local_cache,
@@ -178,7 +181,7 @@ def get_company_revenue_agent(
         config=ai_config,
         next_action_count=0,
         system_prompt=system_prompt,
-        triggering_prompt=DEFAULT_TRIGGERING_PROMPT,
+        triggering_prompt=prompts.generate_prompt_string(PromptId.DEFAULT_TRIGGERING_PROMPT),
         workspace_directory=workspace.root,
     )
 

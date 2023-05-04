@@ -44,7 +44,7 @@ class TestPromptSet(TestCase):
 
     def test_get_configured_prompt_set(self):
         with tempfile.TemporaryDirectory() as temp_dir:
-            with open(os.path.join(temp_dir, "prompt_de.yaml"), "w") as temp_file:
+            with open(os.path.join(temp_dir, "prompts_de.yaml"), "w") as temp_file:
                 temp_file.write(
                     """prompts:
                         - DEFAULT_TRIGGERING_PROMPT: Dies ist ein einfacher Text"""

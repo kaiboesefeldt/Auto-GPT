@@ -5,14 +5,12 @@ from autogpt.config.config import Config
 from autogpt.llm import ApiManager
 from autogpt.logs import logger
 from autogpt.prompts.generator import PromptGenerator
+from autogpt.prompts.prompt_set import get_configured_prompt_set
 from autogpt.setup import prompt_user
 from autogpt.utils import clean_input
 
 CFG = Config()
-
-DEFAULT_TRIGGERING_PROMPT = (
-    "Determine which next command to use, and respond using the format specified above:"
-)
+PROMPTS = get_configured_prompt_set(CFG)
 
 
 def build_default_prompt_generator() -> PromptGenerator:
