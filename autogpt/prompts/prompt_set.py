@@ -1,9 +1,15 @@
-from typing import Dict
+from typing import Dict, Callable
 
 import os
 import yaml
 
+from enum import Enum
+
 from autogpt.config import Config
+
+
+class PromptId(Enum):
+    DEFAULT_TRIGGERING_PROMPT = 1
 
 
 class PromptSet:
@@ -20,21 +26,22 @@ class PromptSet:
             prompts (Dict[str, str]): The prompt snippets and templates. Key is the id, value
             is the snippet or template.
         """
-        self.prompts = prompts
+        self._prompts_factory = prompts_factory
+        self._prompts = None
 
     def generate_prompt_string(self, snippe_id: str, **kwargs: str) -> str:
         """
         Get a prompt snippet, eventually with replaced template parameters.
 
         Args:
-            snippe_id (str): The id of the prompt snippet or template to return
+            snippet_id (PromptId): The id of the prompt snippet or template to return
             kwargs (str): The template arguments. Must fit exactly the arguments required by
             the template.
 
         Returns:
             str: The requested prompt snippet or template, with all template arguments inserted.
         """
-        prompt = self.prompts[snippe_id]
+        prompt = self.prompts[snippet_id.name]
         return prompt.format(**kwargs)
 
 
