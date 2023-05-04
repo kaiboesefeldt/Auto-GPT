@@ -18,18 +18,24 @@ class PromptSet:
     parameters may be passed.
     """
 
-    def __init__(self, prompts: Dict[str, str]):
+    def __init__(self, prompts_factory: Callable[[], Dict[str, str]]):
         """
         Initialize the PromptSet.
 
         Args:
-            prompts (Dict[str, str]): The prompt snippets and templates. Key is the id, value
+            prompts_factory (Dict[str, str]): The prompt snippets and templates. Key is the id, value
             is the snippet or template.
         """
         self._prompts_factory = prompts_factory
         self._prompts = None
 
-    def generate_prompt_string(self, snippe_id: str, **kwargs: str) -> str:
+    @property
+    def prompts(self) -> Dict[str, str]:
+        if not self._prompts:
+            self._prompts = self._prompts_factory()
+        return self._prompts
+
+    def generate_prompt_string(self, snippet_id: PromptId, **kwargs: str) -> str:
         """
         Get a prompt snippet, eventually with replaced template parameters.
 
@@ -59,13 +65,17 @@ class FilePromptSet(PromptSet):
         Args:
             filename (str): The file name which contains the prompt set definition.
         """
-        with open(filename, "r") as f:
+        self._filename = filename
+        super().__init__(self._load_prompts)
+
+    def _load_prompts(self) -> Dict[str, str]:
+        with open(self._filename, "r") as f:
             data = yaml.safe_load(f)
             input_data = data["prompts"]
             prompts = {}
             for d in input_data:
                 prompts.update(d)
-        super().__init__(prompts)
+            return prompts
 
 
 def get_configured_prompt_set(cfg: Config) -> PromptSet:
