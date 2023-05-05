@@ -5,7 +5,7 @@ from autogpt.config.config import Config
 from autogpt.llm import ApiManager
 from autogpt.logs import logger
 from autogpt.prompts.generator import PromptGenerator
-from autogpt.prompts.prompt_set import get_configured_prompt_set
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 from autogpt.setup import prompt_user
 from autogpt.utils import clean_input
 
@@ -26,45 +26,23 @@ def build_default_prompt_generator() -> PromptGenerator:
     prompt_generator = PromptGenerator()
 
     # Add constraints to the PromptGenerator object
-    prompt_generator.add_constraint(
-        "~4000 word limit for short term memory. Your short term memory is short, so"
-        " immediately save important information to files."
-    )
-    prompt_generator.add_constraint(
-        "If you are unsure how you previously did something or want to recall past"
-        " events, thinking about similar events will help you remember."
-    )
-    prompt_generator.add_constraint("No user assistance")
-    prompt_generator.add_constraint(
-        'Exclusively use the commands listed in double quotes e.g. "command name"'
-    )
+    prompt_generator.add_constraint(PROMPTS.generate_prompt_string(PromptId.DEFAULT_TRIGGERING_PROMPT))
+    prompt_generator.add_constraint(PROMPTS.generate_prompt_string(PromptId.CONSTRAINT_SIMILAR_EVENTS))
+    prompt_generator.add_constraint(PROMPTS.generate_prompt_string(PromptId.CONSTRAINT_NO_USER_ASSISTANCE))
+    prompt_generator.add_constraint(PROMPTS.generate_prompt_string(PromptId.CONSTRAINT_EXCLUSIVE_COMMANDS))
 
     # Add resources to the PromptGenerator object
-    prompt_generator.add_resource(
-        "Internet access for searches and information gathering."
-    )
-    prompt_generator.add_resource("Long Term memory management.")
-    prompt_generator.add_resource(
-        "GPT-3.5 powered Agents for delegation of simple tasks."
-    )
-    prompt_generator.add_resource("File output.")
+    prompt_generator.add_resource(PROMPTS.generate_prompt_string(PromptId.RESOURCES_INTERNET))
+    prompt_generator.add_resource(PROMPTS.generate_prompt_string(PromptId.RESOURCES_LONG_TERM_MEMORY))
+    prompt_generator.add_resource(PROMPTS.generate_prompt_string(PromptId.RESOURCES_SIMPLE_AGENT_TASKS))
+    prompt_generator.add_resource(PROMPTS.generate_prompt_string(PromptId.RESOURCES_FILE_OUTPUT))
 
     # Add performance evaluations to the PromptGenerator object
-    prompt_generator.add_performance_evaluation(
-        "Continuously review and analyze your actions to ensure you are performing to"
-        " the best of your abilities."
-    )
-    prompt_generator.add_performance_evaluation(
-        "Constructively self-criticize your big-picture behavior constantly."
-    )
-    prompt_generator.add_performance_evaluation(
-        "Reflect on past decisions and strategies to refine your approach."
-    )
-    prompt_generator.add_performance_evaluation(
-        "Every command has a cost, so be smart and efficient. Aim to complete tasks in"
-        " the least number of steps."
-    )
-    prompt_generator.add_performance_evaluation("Write all code to a file.")
+    prompt_generator.add_performance_evaluation(PROMPTS.generate_prompt_string(PromptId.EVALUATION_REVIEW_AND_ANALYZE))
+    prompt_generator.add_performance_evaluation(PROMPTS.generate_prompt_string(PromptId.EVALUATION_SELF_CRITICIZE))
+    prompt_generator.add_performance_evaluation(PROMPTS.generate_prompt_string(PromptId.EVALUATION_REFLECT_PAST_DECISIONS))
+    prompt_generator.add_performance_evaluation(PROMPTS.generate_prompt_string(PromptId.EVALUATION_BE_EFFICIENT))
+    prompt_generator.add_performance_evaluation(PROMPTS.generate_prompt_string(PromptId.EVALUATION_WRITE_CODE_TO_FILE))
     return prompt_generator
 
 
