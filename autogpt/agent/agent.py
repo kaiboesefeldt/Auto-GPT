@@ -14,6 +14,7 @@ from autogpt.log_cycle.log_cycle import (
     LogCycleHandler,
 )
 from autogpt.logs import logger, print_assistant_thoughts
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 from autogpt.speech import say_text
 from autogpt.spinner import Spinner
 from autogpt.utils import clean_input
@@ -62,6 +63,7 @@ class Agent:
         workspace_directory,
     ):
         cfg = Config()
+        self.prompts = get_configured_prompt_set(cfg)
         self.ai_name = ai_name
         self.memory = memory
         self.summary_memory = (
@@ -239,11 +241,16 @@ class Agent:
 
             # Execute command
             if command_name is not None and command_name.lower().startswith("error"):
-                result = (
-                    f"Command {command_name} threw the following error: {arguments}"
+                result = self.prompts.generate_prompt_string(
+                    PromptId.HISTORY_COMMAND_THREW_ERROR,
+                    command_name=command_name,
+                    arguments=arguments
                 )
             elif command_name == "human_feedback":
-                result = f"Human feedback: {user_input}"
+                result = self.prompts.generate_prompt_string(
+                    PromptId.HISTORY_HUMAN_FEEDBACK,
+                    user_input=user_input
+                )
             else:
                 for plugin in cfg.plugins:
                     if not plugin.can_handle_pre_command():
@@ -257,7 +264,11 @@ class Agent:
                     arguments,
                     self.config.prompt_generator,
                 )
-                result = f"Command {command_name} returned: " f"{command_result}"
+                result = self.prompts.generate_prompt_string(
+                    PromptId.HISTORY_COMMAND_RESULT,
+                    command_name=command_name,
+                    command_result=command_result
+                )
 
                 result_tlength = count_string_tokens(
                     str(command_result), cfg.fast_llm_model
@@ -266,8 +277,10 @@ class Agent:
                     str(self.summary_memory), cfg.fast_llm_model
                 )
                 if result_tlength + memory_tlength + 600 > cfg.fast_token_limit:
-                    result = f"Failure: command {command_name} returned too much output. \
-                        Do not execute this command again with the same arguments."
+                    result = self.prompts.generate_prompt_string(
+                        PromptId.HISTORY_FAILURE_TOO_MUCH_OUTPUT,
+                        command_name=command_name
+                    )
 
                 for plugin in cfg.plugins:
                     if not plugin.can_handle_post_command():
@@ -283,7 +296,10 @@ class Agent:
                 logger.typewriter_log("SYSTEM: ", Fore.YELLOW, result)
             else:
                 self.full_message_history.append(
-                    create_chat_message("system", "Unable to execute command")
+                    create_chat_message(
+                        "system",
+                        self.prompts.generate_prompt_string(PromptId.HISTORY_UNABLE_TO_CREATE_COMMAND)
+                    )
                 )
                 logger.typewriter_log(
                     "SYSTEM: ", Fore.YELLOW, "Unable to execute command"
@@ -314,7 +330,7 @@ class Agent:
         """
         ai_role = self.config.ai_role
 
-        feedback_prompt = f"Below is a message from an AI agent with the role of {ai_role}. Please review the provided Thought, Reasoning, Plan, and Criticism. If these elements accurately contribute to the successful execution of the assumed role, respond with the letter 'Y' followed by a space, and then explain why it is effective. If the provided information is not suitable for achieving the role's objectives, please provide one or more sentences addressing the issue and suggesting a resolution."
+        feedback_prompt = self.prompts.generate_prompt_string(PromptId.FEEDBACK_PROMPT, ai_role=ai_role)
         reasoning = thoughts.get("reasoning", "")
         plan = thoughts.get("plan", "")
         thought = thoughts.get("thoughts", "")
