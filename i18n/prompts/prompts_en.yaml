@@ -50,3 +50,8 @@ prompts:
       {function}```
       
       Only respond with your `return` value.
+  - DATE_AND_TIME: "The current time and date is {date_time}"
+  - BUDGET_INFO: "Your remaining API budget is ${remaining_budget}"
+  - BUDGET_EXCEEDED: "BUDGET EXCEEDED! SHUT DOWN!"
+  - BUDGET_NEARLY_EXCEEDED: "Budget very nearly exceeded! Shut down gracefully!"
+  - BUDGET_LOW: "Budget nearly exceeded. Finish up."

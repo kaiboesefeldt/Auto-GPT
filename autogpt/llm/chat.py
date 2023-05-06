@@ -10,8 +10,10 @@ from autogpt.llm.llm_utils import create_chat_completion
 from autogpt.llm.token_counter import count_message_tokens
 from autogpt.log_cycle.log_cycle import CURRENT_CONTEXT_FILE_NAME
 from autogpt.logs import logger
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 
 cfg = Config()
+prompts = get_configured_prompt_set(cfg)
 
 
 def create_chat_message(role, content) -> Message:
@@ -32,7 +34,7 @@ def generate_context(prompt, relevant_memory, full_message_history, model):
     current_context = [
         create_chat_message("system", prompt),
         create_chat_message(
-            "system", f"The current time and date is {time.strftime('%c')}"
+            "system", prompts.generate_prompt_string(PromptId.DATE_AND_TIME, date_time=time.strftime('%c'))
         ),
         # create_chat_message(
         #     "system",
@@ -178,13 +180,13 @@ def chat_with_ai(
                 if remaining_budget < 0:
                     remaining_budget = 0
                 system_message = (
-                    f"Your remaining API budget is ${remaining_budget:.3f}"
+                    prompts.generate_prompt_string(PromptId.BUDGET_INFO, remaining_budget=f"{remaining_budget:.3f}")
                     + (
-                        " BUDGET EXCEEDED! SHUT DOWN!\n\n"
+                        " " + prompts.generate_prompt_string(PromptId.BUDGET_EXCEEDED) + "\n\n"
                         if remaining_budget == 0
-                        else " Budget very nearly exceeded! Shut down gracefully!\n\n"
+                        else " " + prompts.generate_prompt_string(PromptId.BUDGET_NEARLY_EXCEEDED) + "\n\n"
                         if remaining_budget < 0.005
-                        else " Budget nearly exceeded. Finish up.\n\n"
+                        else " " + prompts.generate_prompt_string(PromptId.BUDGET_LOW) + "\n\n"
                         if remaining_budget < 0.01
                         else "\n\n"
                     )

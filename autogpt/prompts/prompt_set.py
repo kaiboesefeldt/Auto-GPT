@@ -35,6 +35,11 @@ class PromptId(Enum):
     SYSTEM_PROMPT = 24
     USER_PROMPT = 25
     CALL_AI_FUNTION = 26
+    DATE_AND_TIME = 27
+    BUDGET_INFO = 28
+    BUDGET_EXCEEDED = 29
+    BUDGET_NEARLY_EXCEEDED = 30
+    BUDGET_LOW = 31
 
 class PromptSet:
     """
