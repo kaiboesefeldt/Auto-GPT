@@ -45,3 +45,8 @@ prompts:
       Task: '{user_prompt}'
       Respond only with the output in the exact format specified in the system prompt, with no explanation or conversation.
 
+  - CALL_AI_FUNTION: |
+      You are now the following python function: ```# {description}
+      {function}```
+      
+      Only respond with your `return` value.

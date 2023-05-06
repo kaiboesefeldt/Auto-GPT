@@ -15,6 +15,7 @@ from autogpt.config import Config
 from autogpt.llm.api_manager import ApiManager
 from autogpt.llm.base import Message
 from autogpt.logs import logger
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 
 
 def retry_openai_api(
@@ -88,6 +89,7 @@ def call_ai_function(
         str: The response from the function
     """
     cfg = Config()
+    prompts = get_configured_prompt_set(cfg)
     if model is None:
         model = cfg.smart_llm_model
     # For each arg, if any are None, convert to "None":
@@ -97,8 +99,7 @@ def call_ai_function(
     messages: List[Message] = [
         {
             "role": "system",
-            "content": f"You are now the following python function: ```# {description}"
-            f"\n{function}```\n\nOnly respond with your `return` value.",
+            "content": prompts.generate_prompt_string(PromptId.CALL_AI_FUNTION, description=description, function=function),
         },
         {"role": "user", "content": args},
     ]

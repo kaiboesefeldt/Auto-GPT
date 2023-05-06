@@ -34,6 +34,7 @@ class PromptId(Enum):
     DEFAULT_AI_GOALS = 23
     SYSTEM_PROMPT = 24
     USER_PROMPT = 25
+    CALL_AI_FUNTION = 26
 
 class PromptSet:
     """
