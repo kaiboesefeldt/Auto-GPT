@@ -6,6 +6,7 @@ from weaviate.util import generate_uuid5
 from autogpt.llm import get_ada_embedding
 from autogpt.logs import logger
 from autogpt.memory.base import MemoryProviderSingleton
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 
 
 def default_schema(weaviate_index):
@@ -23,6 +24,7 @@ def default_schema(weaviate_index):
 
 class WeaviateMemory(MemoryProviderSingleton):
     def __init__(self, cfg):
+        self.prompts = get_configured_prompt_set(cfg)
         auth_credentials = self._build_auth_credentials(cfg)
 
         url = f"{cfg.weaviate_protocol}://{cfg.weaviate_host}:{cfg.weaviate_port}"
@@ -84,7 +86,7 @@ class WeaviateMemory(MemoryProviderSingleton):
                 vector=vector,
             )
 
-        return f"Inserting data into memory at uuid: {doc_uuid}:\n data: {data}"
+        return self.prompts.generate_prompt_string(PromptId.MEMORY_ADD, position_type="uuid", position=doc_uuid, data=data)
 
     def get(self, data):
         return self.get_relevant(data, 1)

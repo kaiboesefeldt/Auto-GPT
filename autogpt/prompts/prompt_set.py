@@ -40,6 +40,7 @@ class PromptId(Enum):
     BUDGET_EXCEEDED = 29
     BUDGET_NEARLY_EXCEEDED = 30
     BUDGET_LOW = 31
+    MEMORY_ADD = 32
 
 class PromptSet:
     """

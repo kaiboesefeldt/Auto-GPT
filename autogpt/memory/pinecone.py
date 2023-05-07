@@ -4,10 +4,12 @@ from colorama import Fore, Style
 from autogpt.llm import get_ada_embedding
 from autogpt.logs import logger
 from autogpt.memory.base import MemoryProviderSingleton
+from autogpt.prompts.prompt_set import PromptId, get_configured_prompt_set
 
 
 class PineconeMemory(MemoryProviderSingleton):
     def __init__(self, cfg):
+        self.prompts = get_configured_prompt_set(cfg)
         pinecone_api_key = cfg.pinecone_api_key
         pinecone_region = cfg.pinecone_region
         pinecone.init(api_key=pinecone_api_key, environment=pinecone_region)
@@ -50,7 +52,7 @@ class PineconeMemory(MemoryProviderSingleton):
         vector = get_ada_embedding(data)
         # no metadata here. We may wish to change that long term.
         self.index.upsert([(str(self.vec_num), vector, {"raw_text": data})])
-        _text = f"Inserting data into memory at index: {self.vec_num}:\n data: {data}"
+        _text = self.prompts.generate_prompt_string(PromptId.MEMORY_ADD, position_type="index", position=str(self.vec_num), data=data)
         self.vec_num += 1
         return _text
 

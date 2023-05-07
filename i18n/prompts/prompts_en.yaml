@@ -55,3 +55,6 @@ prompts:
   - BUDGET_EXCEEDED: "BUDGET EXCEEDED! SHUT DOWN!"
   - BUDGET_NEARLY_EXCEEDED: "Budget very nearly exceeded! Shut down gracefully!"
   - BUDGET_LOW: "Budget nearly exceeded. Finish up."
+  - MEMORY_ADD: |
+      Inserting data into memory at {position_type}: {position}:
+      data: {data}"
