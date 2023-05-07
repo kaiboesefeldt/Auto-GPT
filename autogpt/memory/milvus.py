@@ -6,6 +6,7 @@ from pymilvus import Collection, CollectionSchema, DataType, FieldSchema, connec
 from autogpt.config import Config
 from autogpt.llm import get_ada_embedding
 from autogpt.memory.base import MemoryProviderSingleton
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 
 
 class MilvusMemory(MemoryProviderSingleton):
@@ -17,6 +18,7 @@ class MilvusMemory(MemoryProviderSingleton):
         Args:
             cfg (Config): Auto-GPT global config.
         """
+        self.prompts = get_configured_prompt_set(cfg)
         self.configure(cfg)
 
         connect_kwargs = {}
@@ -101,10 +103,7 @@ class MilvusMemory(MemoryProviderSingleton):
         """
         embedding = get_ada_embedding(data)
         result = self.collection.insert([[embedding], [data]])
-        _text = (
-            "Inserting data into memory at primary key: "
-            f"{result.primary_keys[0]}:\n data: {data}"
-        )
+        _text = self.prompts.generate_prompt_string(PromptId.MEMORY_ADD, position_type="primary key", position=str(result.primary_keys[0]), data=data)
         return _text
 
     def get(self, data):

@@ -13,6 +13,7 @@ from redis.commands.search.query import Query
 from autogpt.llm import get_ada_embedding
 from autogpt.logs import logger
 from autogpt.memory.base import MemoryProviderSingleton
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 
 SCHEMA = [
     TextField("data"),
@@ -34,6 +35,7 @@ class RedisMemory(MemoryProviderSingleton):
 
         Returns: None
         """
+        self.prompts = get_configured_prompt_set(cfg)
         redis_host = cfg.redis_host
         redis_port = cfg.redis_port
         redis_password = cfg.redis_password
@@ -93,9 +95,7 @@ class RedisMemory(MemoryProviderSingleton):
         data_dict = {b"data": data, "embedding": vector}
         pipe = self.redis.pipeline()
         pipe.hset(f"{self.cfg.memory_index}:{self.vec_num}", mapping=data_dict)
-        _text = (
-            f"Inserting data into memory at index: {self.vec_num}:\n" f"data: {data}"
-        )
+        _text = self.prompts.generate_prompt_string(PromptId.MEMORY_ADD, position_type="index", position=str(self.vec_num), data=data)
         self.vec_num += 1
         pipe.set(f"{self.cfg.memory_index}-vec_num", self.vec_num)
         pipe.execute()
