@@ -117,6 +117,12 @@ class PromptId(Enum):
     GET_DATE_TIME_RESULT = auto()
     CREATE_MESSAGE_FOR_QUESTION = auto()
     DATA_INGESTION_ADD_CHUNK = auto()
+    FORMAT_MEMORY_COMMAND = auto()
+    FORMAT_MEMORY_NO_COMMAND = auto()
+    FORMAT_MEMORY_HUMAN_FEEDBACK = auto()
+    FORMAT_MEMORY_NO_USER_INPUT = auto()
+    FORMAT_MEMORY_REPLY = auto()
+
 
 
 class PromptSet:

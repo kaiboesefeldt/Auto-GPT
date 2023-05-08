@@ -147,3 +147,11 @@ prompts:
   - DATA_INGESTION_ADD_CHUNK: |
       Filename: {filename}
       Content part#{i_chunk}/{num_chunks}: {chunk}"
+  - FORMAT_MEMORY_COMMAND: "Command"
+  - FORMAT_MEMORY_NO_COMMAND: "None"
+  - FORMAT_MEMORY_HUMAN_FEEDBACK: "Human feedback"
+  - FORMAT_MEMORY_NO_USER_INPUT: "None""
+  - FORMAT_MEMORY_REPLY: |
+      Assistant Reply: {assistant_reply}
+      Result: {result}
+      Human Feedback: {user_input}
