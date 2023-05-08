@@ -10,6 +10,10 @@ from autogpt.config import Config
 
 class PromptId(Enum):
     DEFAULT_TRIGGERING_PROMPT = auto()
+    PROMPT_START = auto()
+    PROMPT_START_OS_INFO = auto()
+    PROMPT_BUDGET = auto()
+    FULL_PROMPT = auto()
     CONSTRAINT_WORD_LIMIT = auto()
     CONSTRAINT_SIMILAR_EVENTS = auto()
     CONSTRAINT_NO_USER_ASSISTANCE = auto()
@@ -110,13 +114,9 @@ class PromptId(Enum):
     COMMAND_WRITE_TESTS_DESCRIPTION = auto()
     COMMAND_WRITE_TESTS_SIGNATURE = auto()
     COMMAND_WRITE_TESTS_LONG_DESCRIPTION = auto()
-
-
     GET_DATE_TIME_RESULT = auto()
     CREATE_MESSAGE_FOR_QUESTION = auto()
     DATA_INGESTION_ADD_CHUNK = auto()
-
-
 
 
 class PromptSet:

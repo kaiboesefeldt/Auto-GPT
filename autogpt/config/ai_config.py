@@ -12,10 +12,15 @@ from typing import Any, Optional, Type
 import distro
 import yaml
 
+from autogpt.config import Config
 from autogpt.prompts.generator import PromptGenerator
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 
 # Soon this will go in a folder where it remembers more stuff about the run(s)
 SAVE_FILE = str(Path(os.getcwd()) / "ai_settings.yaml")
+
+CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
 
 
 class AIConfig:
@@ -124,12 +129,7 @@ class AIConfig:
               including the ai_name, ai_role, ai_goals, and api_budget.
         """
 
-        prompt_start = (
-            "Your decisions must always be made independently without"
-            " seeking user assistance. Play to your strengths as an LLM and pursue"
-            " simple strategies with no legal complications."
-            ""
-        )
+        prompt_start = PROMPTS.generate_prompt_string(PromptId.PROMPT_START)
 
         from autogpt.config import Config
         from autogpt.prompts.prompt import build_default_prompt_generator
@@ -155,14 +155,22 @@ class AIConfig:
                 else distro.name(pretty=True)
             )
 
-            prompt_start += f"\nThe OS you are running on is: {os_info}"
+            prompt_start += "\n" + PROMPTS.generate_prompt_string(PromptId.PROMPT_START_OS_INFO, os_info=os_info)
 
         # Construct full prompt
-        full_prompt = f"You are {prompt_generator.name}, {prompt_generator.role}\n{prompt_start}\n\nGOALS:\n\n"
+        goals = ""
         for i, goal in enumerate(self.ai_goals):
-            full_prompt += f"{i+1}. {goal}\n"
+            goals += f"{i+1}. {goal}\n"
+        budget = ""
         if self.api_budget > 0.0:
-            full_prompt += f"\nIt takes money to let you run. Your API budget is ${self.api_budget:.3f}"
+            budget = "\n" + PROMPTS.generate_prompt_string(PromptId.PROMPT_BUDGET, budget=f"{self.api_budget:.3f}")
         self.prompt_generator = prompt_generator
-        full_prompt += f"\n\n{prompt_generator.generate_prompt_string()}"
-        return full_prompt
+        return PROMPTS.generate_prompt_string(
+            PromptId.FULL_PROMPT,
+            name=prompt_generator.name,
+            role=prompt_generator.role,
+            prompt_start=prompt_start,
+            goals=goals,
+            budget=budget,
+            prompt=prompt_generator.generate_prompt_string()
+        )
