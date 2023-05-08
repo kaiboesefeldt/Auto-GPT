@@ -14,10 +14,12 @@ from requests.adapters import HTTPAdapter, Retry
 from autogpt.commands.command import command
 from autogpt.config import Config
 from autogpt.logs import logger
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 from autogpt.spinner import Spinner
 from autogpt.utils import readable_file_size
 
 CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
 
 Operation = Literal["write", "append", "delete"]
 
@@ -143,7 +145,11 @@ def split_file(
         start += max_length - overlap
 
 
-@command("read_file", "Read file", '"filename": "<filename>"')
+@command(
+    "read_file",
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_READ_FILE_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_READ_FILE_SIGNATURE),
+)
 def read_file(filename: str) -> str:
     """Read a file and return the contents
 
@@ -159,7 +165,7 @@ def read_file(filename: str) -> str:
         logger.debug(f"Read file '{filename}' with encoding '{encoding}'")
         return str(charset_match)
     except Exception as err:
-        return f"Error: {err}"
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_ERROR, error=str(err))
 
 
 def ingest_file(
@@ -185,10 +191,7 @@ def ingest_file(
         num_chunks = len(chunks)
         for i, chunk in enumerate(chunks):
             logger.info(f"Ingesting chunk {i + 1} / {num_chunks} into memory")
-            memory_to_add = (
-                f"Filename: {filename}\n" f"Content part#{i + 1}/{num_chunks}: {chunk}"
-            )
-
+            memory_to_add = PROMPTS.generate_prompt_string(PromptId.DATA_INGESTION_ADD_CHUNK, i_chunk=str(i + 1), num_chunks=str(num_chunks), chunk=chunk)
             memory.add(memory_to_add)
 
         logger.info(f"Done ingesting {num_chunks} chunks from {filename}.")
@@ -196,7 +199,11 @@ def ingest_file(
         logger.info(f"Error while ingesting file '{filename}': {err}")
 
 
-@command("write_to_file", "Write to file", '"filename": "<filename>", "text": "<text>"')
+@command(
+    "write_to_file",
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_WRITE_TO_FILE_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_WRITE_TO_FILE_SIGNATURE),
+)
 def write_to_file(filename: str, text: str) -> str:
     """Write text to a file
 
@@ -209,20 +216,22 @@ def write_to_file(filename: str, text: str) -> str:
     """
     checksum = text_checksum(text)
     if is_duplicate_operation("write", filename, checksum):
-        return "Error: File has already been updated."
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_WRITE_TO_FILE_ERROR_DUPLICATE_OPERATION)
     try:
         directory = os.path.dirname(filename)
         os.makedirs(directory, exist_ok=True)
         with open(filename, "w", encoding="utf-8") as f:
             f.write(text)
         log_operation("write", filename, checksum)
-        return "File written to successfully."
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_WRITE_TO_FILE_SUCCESS)
     except Exception as err:
-        return f"Error: {err}"
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_ERROR, error=str(err))
 
 
 @command(
-    "append_to_file", "Append to file", '"filename": "<filename>", "text": "<text>"'
+    "append_to_file",
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_APPEND_TO_FILE_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_APPEND_TO_FILE_SIGNATURE),
 )
 def append_to_file(filename: str, text: str, should_log: bool = True) -> str:
     """Append text to a file
@@ -246,12 +255,16 @@ def append_to_file(filename: str, text: str, should_log: bool = True) -> str:
                 checksum = text_checksum(f.read())
             log_operation("append", filename, checksum=checksum)
 
-        return "Text appended successfully."
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_APPEND_TO_FILE_SUCCESS)
     except Exception as err:
-        return f"Error: {err}"
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_ERROR, error=str(err))
 
 
-@command("delete_file", "Delete file", '"filename": "<filename>"')
+@command(
+    "delete_file",
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_DELETE_FILE_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_DELETE_FILE_SIGNATURE),
+)
 def delete_file(filename: str) -> str:
     """Delete a file
 
@@ -262,16 +275,20 @@ def delete_file(filename: str) -> str:
         str: A message indicating success or failure
     """
     if is_duplicate_operation("delete", filename):
-        return "Error: File has already been deleted."
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_DELETE_FILE_ERROR_DUPLICATE_OPERATION)
     try:
         os.remove(filename)
         log_operation("delete", filename)
-        return "File deleted successfully."
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_DELETE_FILE_SUCCESS)
     except Exception as err:
-        return f"Error: {err}"
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_ERROR, error=str(err))
 
 
-@command("list_files", "List Files in Directory", '"directory": "<directory>"')
+@command(
+    "list_files",
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_LIST_FILES_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_LIST_FILES_SIGNATURE),
+)
 def list_files(directory: str) -> list[str]:
     """lists files in a directory recursively
 
@@ -297,10 +314,10 @@ def list_files(directory: str) -> list[str]:
 
 @command(
     "download_file",
-    "Download File",
-    '"url": "<url>", "filename": "<filename>"',
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_DOWNLOAD_FILE_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_DOWNLOAD_FILE_SIGNATURE),
     CFG.allow_downloads,
-    "Error: You do not have user authorization to download files locally.",
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_DOWNLOAD_FILE_DISABLE_REASON),
 )
 def download_file(url, filename):
     """Downloads a file
@@ -336,8 +353,8 @@ def download_file(url, filename):
                         progress = f"{readable_file_size(downloaded_size)} / {readable_file_size(total_size)}"
                         spinner.update_message(f"{message} {progress}")
 
-            return f'Successfully downloaded and locally stored file: "{filename}"! (Size: {readable_file_size(downloaded_size)})'
+            return PROMPTS.generate_prompt_string(PromptId.COMMAND_DOWNLOAD_FILE_SUCCESS, filename=filename, downloaded_size=readable_file_size(downloaded_size))
     except requests.HTTPError as err:
-        return f"Got an HTTP Error whilst trying to download file: {err}"
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_DOWNLOAD_FILE_ERROR_HTTP, error=str(err))
     except Exception as err:
-        return f"Error: {err}"
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_ERROR, error=str(err))

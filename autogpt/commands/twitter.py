@@ -4,12 +4,17 @@ import os
 import tweepy
 
 from autogpt.commands.command import command
+from autogpt.config import Config
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
+
+CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
 
 
 @command(
     "send_tweet",
-    "Send Tweet",
-    '"tweet_text": "<tweet_text>"',
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_SEND_TWEET_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_SEND_TWEET_SIGNATURE),
 )
 def send_tweet(tweet_text: str) -> str:
     """
@@ -36,6 +41,6 @@ def send_tweet(tweet_text: str) -> str:
     # Send tweet
     try:
         api.update_status(tweet_text)
-        return "Tweet sent successfully!"
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_SEND_TWEET_SUCCESS)
     except tweepy.TweepyException as e:
-        return f"Error sending tweet: {e.reason}"
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_SEND_TWEET_ERROR, reason=str(e.reason))

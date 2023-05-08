@@ -10,11 +10,18 @@ from PIL import Image
 from autogpt.commands.command import command
 from autogpt.config import Config
 from autogpt.logs import logger
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 
 CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
 
 
-@command("generate_image", "Generate Image", '"prompt": "<prompt>"', CFG.image_provider)
+@command(
+    "generate_image",
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERATE_IMAGE_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERATE_IMAGE_SIGNATURE),
+    CFG.image_provider
+)
 def generate_image(prompt: str, size: int = 256) -> str:
     """Generate an image from a prompt.
 
@@ -36,7 +43,8 @@ def generate_image(prompt: str, size: int = 256) -> str:
     # SD WebUI
     elif CFG.image_provider == "sdwebui":
         return generate_image_with_sd_webui(prompt, filename, size)
-    return "No Image Provider Set"
+
+    return PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERATE_IMAGE_ERROR_NO_PROVIDER)
 
 
 def generate_image_with_hf(prompt: str, filename: str) -> str:
@@ -74,7 +82,7 @@ def generate_image_with_hf(prompt: str, filename: str) -> str:
 
     image.save(filename)
 
-    return f"Saved to disk:{filename}"
+    return PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERATE_IMAGE_SAVED_TO_DISK, filename=filename)
 
 
 def generate_image_with_dalle(prompt: str, filename: str, size: int) -> str:
@@ -112,7 +120,7 @@ def generate_image_with_dalle(prompt: str, filename: str, size: int) -> str:
     with open(filename, mode="wb") as png:
         png.write(image_data)
 
-    return f"Saved to disk:{filename}"
+    return PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERATE_IMAGE_SAVED_TO_DISK, filename=filename)
 
 
 def generate_image_with_sd_webui(
@@ -162,4 +170,4 @@ def generate_image_with_sd_webui(
     image = Image.open(io.BytesIO(b64))
     image.save(filename)
 
-    return f"Saved to disk:{filename}"
+    return PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERATE_IMAGE_SAVED_TO_DISK, filename=filename)

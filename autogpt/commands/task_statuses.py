@@ -4,13 +4,17 @@ from __future__ import annotations
 from typing import NoReturn
 
 from autogpt.commands.command import command
+from autogpt.config import Config
 from autogpt.logs import logger
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 
+CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
 
 @command(
     "task_complete",
-    "Task Complete (Shutdown)",
-    '"reason": "<reason>"',
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_TASK_COMPLETE_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_TASK_COMPLETE_SIGNATURE),
 )
 def task_complete(reason: str) -> NoReturn:
     """

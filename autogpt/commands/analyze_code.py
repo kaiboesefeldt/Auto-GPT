@@ -2,13 +2,18 @@
 from __future__ import annotations
 
 from autogpt.commands.command import command
+from autogpt.config import Config
 from autogpt.llm import call_ai_function
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
+
+CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
 
 
 @command(
     "analyze_code",
-    "Analyze Code",
-    '"code": "<full_code_string>"',
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_ANALYZE_CODE_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_ANALYZE_CODE_SIGNATURE),
 )
 def analyze_code(code: str) -> list[str]:
     """
@@ -24,8 +29,6 @@ def analyze_code(code: str) -> list[str]:
 
     function_string = "def analyze_code(code: str) -> list[str]:"
     args = [code]
-    description_string = (
-        "Analyzes the given code and returns a list of suggestions for improvements."
-    )
+    description_string = PROMPTS.generate_prompt_string(PromptId.COMMAND_ANALYZE_CODE_LONG_DESCRIPTION)
 
     return call_ai_function(function_string, args, description_string)

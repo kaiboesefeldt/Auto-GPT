@@ -3,9 +3,14 @@ import importlib
 import inspect
 from typing import Any, Callable, Optional
 
+from autogpt.config import Config
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
+
 # Unique identifier for auto-gpt commands
 AUTO_GPT_COMMAND_IDENTIFIER = "auto_gpt_command"
 
+CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
 
 class Command:
     """A class representing a command.
@@ -34,11 +39,11 @@ class Command:
 
     def __call__(self, *args, **kwargs) -> Any:
         if not self.enabled:
-            return f"Command '{self.name}' is disabled: {self.disabled_reason}"
+            return PROMPTS.generate_prompt_string(PromptId.COMMAND_DISABLED, name=self.name, disabled_reason=self.disabled_reason)
         return self.method(*args, **kwargs)
 
     def __str__(self) -> str:
-        return f"{self.name}: {self.description}, args: {self.signature}"
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_RECORD, name=self.name, description=self.description, signature=self.signature)
 
 
 class CommandRegistry:

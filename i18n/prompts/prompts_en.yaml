@@ -58,3 +58,80 @@ prompts:
   - MEMORY_ADD: |
       Inserting data into memory at {position_type}: {position}:
       data: {data}"
+  - COMMAND_DISABLED: "Command '{name}' is disabled: {disabled_reason}"
+  - COMMAND_RECORD: "{name}: {description}, args: {signature}"
+  - COMMAND_GENERAL_ERROR: "Error: {error}"
+  - COMMAND_ANALYZE_CODE_DESCRIPTION: "Analyze Code"
+  - COMMAND_ANALYZE_CODE_LONG_DESCRIPTION: "Analyzes the given code and returns a list of suggestions for improvements."
+  - COMMAND_ANALYZE_CODE_SIGNATURE: '"code": "<full_code_string>"'
+  - COMMAND_AUDIO_TEXT_DESCRIPTION: "Convert Audio to text"
+  - COMMAND_AUDIO_TEXT_SIGNATURE: '"filename": "<filename>"'
+  - COMMAND_AUDIO_TEXT_DISABLE_REASON: "Configure huggingface_audio_to_text_model."
+  - COMMAND_AUDIO_TEXT_RESULT: "The audio says: {text}"
+  - COMMAND_EXECUTE_PYTHON_FILE_DESCRIPTION: "Execute Python File"
+  - COMMAND_EXECUTE_PYTHON_FILE_SIGNATURE: '"filename": "<filename>"'
+  - COMMAND_EXECUTE_PYTHON_FILE_ERROR_INVALID_TYPE: "Error: Invalid file type. Only .py files are allowed."
+  - COMMAND_EXECUTE_PYTHON_FILE_ERROR_FILE_NOT_EXIST: "Error: File '{filename}' does not exist."
+  - COMMAND_EXECUTE_SHELL_DESCRIPTION: "Execute Shell Command, non-interactive commands only"
+  - COMMAND_EXECUTE_SHELL_SIGNATURE: '"command_line": "<command_line>"'
+  - COMMAND_EXECUTE_SHELL_DISABLE_REASON: "You are not allowed to run local shell commands. To execute shell commands, EXECUTE_LOCAL_COMMANDS must be set to 'True' in your config. Do not attempt to bypass the restriction."
+  - COMMAND_EXECUTE_SHELL_POPEN_DESCRIPTION: "Execute Shell Command, non-interactive commands only"
+  - COMMAND_EXECUTE_SHELL_POPEN_SIGNATURE: '"command_line": "<command_line>"'
+  - COMMAND_EXECUTE_SHELL_POPEN_DISABLE_REASON: "You are not allowed to run local shell commands. To execute shell commands, EXECUTE_LOCAL_COMMANDS must be set to 'True' in your config. Do not attempt to bypass the restriction."
+  - COMMAND_EXECUTE_SHELL_POPEN_RESULT: "Subprocess started with PID:'{pid}'"
+  - COMMAND_READ_FILE_DESCRIPTION: "Read file"
+  - COMMAND_READ_FILE_SIGNATURE: '"filename": "<filename>"'
+  - COMMAND_WRITE_TO_FILE_DESCRIPTION: "Write to file"
+  - COMMAND_WRITE_TO_FILE_SIGNATURE: '"filename": "<filename>", "text": "<text>"'
+  - COMMAND_WRITE_TO_FILE_ERROR_DUPLICATE_OPERATION: "Error: File has already been updated."
+  - COMMAND_WRITE_TO_FILE_SUCCESS: "File written to successfully."
+  - COMMAND_APPEND_TO_FILE_DESCRIPTION: "Append to file"
+  - COMMAND_APPEND_TO_FILE_SIGNATURE: '"filename": "<filename>", "text": "<text>"'
+  - COMMAND_APPEND_TO_FILE_SUCCESS: "Text appended successfully."
+  - COMMAND_DELETE_FILE_DESCRIPTION: "Delete file"
+  - COMMAND_DELETE_FILE_SIGNATURE: '"filename": "<filename>"'
+  - COMMAND_DELETE_FILE_ERROR_DUPLICATE_OPERATION: "Error: File has already been deleted."
+  - COMMAND_DELETE_FILE_SUCCESS: "File deleted successfully."
+  - COMMAND_LIST_FILES_DESCRIPTION: "List Files in Directory"
+  - COMMAND_LIST_FILES_SIGNATURE: '"directory": "<directory>"'
+  - COMMAND_DOWNLOAD_FILE_DESCRIPTION: "Download File"
+  - COMMAND_DOWNLOAD_FILE_SIGNATURE: '"url": "<url>", "filename": "<filename>"'
+  - COMMAND_DOWNLOAD_FILE_DISABLE_REASON: "Error: You do not have user authorization to download files locally."
+  - COMMAND_DOWNLOAD_FILE_ERROR_HTTP: "Got an HTTP Error whilst trying to download file: {error}"
+  - COMMAND_DOWNLOAD_FILE_SUCCESS: 'Successfully downloaded and locally stored file: "{filename}"! (Size: {downloaded_size})'
+  - COMMAND_CLONE_GIT_REPO_DESCRIPTION: "Clone Repository"
+  - COMMAND_CLONE_GIT_REPO_SIGNATURE: '"url": "<repository_url>", "clone_path": "<clone_path>"'
+  - COMMAND_CLONE_GIT_REPO_DISABLE_REASON: "Configure github_username and github_api_key."
+  - COMMAND_CLONE_GIT_REPO_RESULT: "Cloned {url} to {clone_path}"
+  - COMMAND_GOOGLE_SEARCH_DESCRIPTION: "Google Search"
+  - COMMAND_GOOGLE_SEARCH_SIGNATURE: '"query": "<query>"'
+  - COMMAND_GOOGLE_SEARCH_DISABLE_REASON: "Configure google_api_key."
+  - COMMAND_GOOGLE_SEARCH_ERROR_INVALID_API_KEY: "Error: The provided Google API key is invalid or missing."
+  - COMMAND_GENERATE_IMAGE_DESCRIPTION: "Generate Image"
+  - COMMAND_GENERATE_IMAGE_SIGNATURE: '"prompt": "<prompt>"'
+  - COMMAND_GENERATE_IMAGE_ERROR_NO_PROVIDER: "No Image Provider Set"
+  - COMMAND_GENERATE_IMAGE_SAVED_TO_DISK: "Saved to disk:{filename}"
+  - COMMAND_IMPROVE_CODE_DESCRIPTION: "Get Improved Code"
+  - COMMAND_IMPROVE_CODE_SIGNATURE: '"suggestions": "<list_of_suggestions>", "code": "<full_code_string>"'
+  - COMMAND_IMPROVE_CODE_LONG_DESCRIPTION: "Improves the provided code based on the suggestions provided, making no other changes."
+  - COMMAND_TASK_COMPLETE_DESCRIPTION: "Task Complete (Shutdown)"
+  - COMMAND_TASK_COMPLETE_SIGNATURE: '"reason": "<reason>"'
+  - COMMAND_SEND_TWEET_DESCRIPTION: "Send Tweet"
+  - COMMAND_SEND_TWEET_SIGNATURE: '"tweet_text": "<tweet_text>"'
+  - COMMAND_SEND_TWEET_SUCCESS: "Tweet sent successfully!"
+  - COMMAND_SEND_TWEET_ERROR: "Error sending tweet: {reason}"
+  - COMMAND_BROWSE_WEBISTE_DESCRIPTION: "Browse Website"
+  - COMMAND_BROWSE_WEBISTE_SIGNATURE: '"url": "<url>", "question": "<what_you_want_to_find_on_website>"'
+  - COMMAND_BROWSE_WEBISTE_NO_RESPONSE: "Error: Could not get response"
+  - COMMAND_BROWSE_WEBSITE_ANSWER: |
+      Answer gathered from website: {summary_text}
+      
+      Links: {links}"
+  - COMMAND_WRITE_TESTS_DESCRIPTION: "Write Tests"
+  - COMMAND_WRITE_TESTS_SIGNATURE: '"code": "<full_code_string>", "focus": "<list_of_focus_areas>"'
+  - COMMAND_WRITE_TESTS_LONG_DESCRIPTION: "Generates test cases for the existing code, focusing on specific areas if required."
+  - GET_DATE_TIME_RESULT: "Current date and time: {date_time}"
+  - CREATE_MESSAGE_FOR_QUESTION: '"""{chunk}""" Using the above text, answer the following question: "{question}" -- if the question cannot be answered using the text, summarize the text.'
+  - DATA_INGESTION_ADD_CHUNK: |
+      Filename: {filename}
+      Content part#{i_chunk}/{num_chunks}: {chunk}"

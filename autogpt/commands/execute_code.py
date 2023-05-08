@@ -9,11 +9,17 @@ from docker.errors import ImageNotFound
 from autogpt.commands.command import command
 from autogpt.config import Config
 from autogpt.logs import logger
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 
 CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
 
 
-@command("execute_python_file", "Execute Python File", '"filename": "<filename>"')
+@command(
+    "execute_python_file",
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_EXECUTE_PYTHON_FILE_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_EXECUTE_PYTHON_FILE_SIGNATURE),
+)
 def execute_python_file(filename: str) -> str:
     """Execute a Python file in a Docker container and return the output
 
@@ -26,10 +32,10 @@ def execute_python_file(filename: str) -> str:
     logger.info(f"Executing file '{filename}'")
 
     if not filename.endswith(".py"):
-        return "Error: Invalid file type. Only .py files are allowed."
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_EXECUTE_PYTHON_FILE_ERROR_INVALID_TYPE)
 
     if not os.path.isfile(filename):
-        return f"Error: File '{filename}' does not exist."
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_EXECUTE_PYTHON_FILE_ERROR_FILE_NOT_EXIST, filename=filename)
 
     if we_are_running_in_a_docker_container():
         result = subprocess.run(
@@ -91,20 +97,18 @@ def execute_python_file(filename: str) -> str:
         logger.warn(
             "Could not run the script in a container. If you haven't already, please install Docker https://docs.docker.com/get-docker/"
         )
-        return f"Error: {str(e)}"
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_ERROR, error=str(e))
 
     except Exception as e:
-        return f"Error: {str(e)}"
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_FILE_ERROR, error=str(e))
 
 
 @command(
     "execute_shell",
-    "Execute Shell Command, non-interactive commands only",
-    '"command_line": "<command_line>"',
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_EXECUTE_SHELL_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_EXECUTE_SHELL_SIGNATURE),
     CFG.execute_local_commands,
-    "You are not allowed to run local shell commands. To execute"
-    " shell commands, EXECUTE_LOCAL_COMMANDS must be set to 'True' "
-    "in your config. Do not attempt to bypass the restriction.",
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_EXECUTE_SHELL_DISABLE_REASON),
 )
 def execute_shell(command_line: str) -> str:
     """Execute a shell command and return the output
@@ -136,12 +140,10 @@ def execute_shell(command_line: str) -> str:
 
 @command(
     "execute_shell_popen",
-    "Execute Shell Command, non-interactive commands only",
-    '"command_line": "<command_line>"',
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_EXECUTE_SHELL_POPEN_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_EXECUTE_SHELL_POPEN_SIGNATURE),
     CFG.execute_local_commands,
-    "You are not allowed to run local shell commands. To execute"
-    " shell commands, EXECUTE_LOCAL_COMMANDS must be set to 'True' "
-    "in your config. Do not attempt to bypass the restriction.",
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_EXECUTE_SHELL_POPEN_DISABLE_REASON),
 )
 def execute_shell_popen(command_line) -> str:
     """Execute a shell command with Popen and returns an english description
@@ -172,7 +174,7 @@ def execute_shell_popen(command_line) -> str:
 
     os.chdir(current_dir)
 
-    return f"Subprocess started with PID:'{str(process.pid)}'"
+    return PROMPTS.generate_prompt_string(PromptId.COMMAND_EXECUTE_SHELL_POPEN_RESULT, pid=str(process.pid))
 
 
 def we_are_running_in_a_docker_container() -> bool:

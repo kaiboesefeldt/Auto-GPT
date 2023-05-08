@@ -7,11 +7,18 @@ from duckduckgo_search import ddg
 
 from autogpt.commands.command import command
 from autogpt.config import Config
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 
 CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
 
 
-@command("google", "Google Search", '"query": "<query>"', not CFG.google_api_key)
+@command(
+    "google",
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_GOOGLE_SEARCH_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_GOOGLE_SEARCH_SIGNATURE),
+    not CFG.google_api_key
+)
 def google_search(query: str, num_results: int = 8) -> str:
     """Return the results of a Google search
 
@@ -39,10 +46,10 @@ def google_search(query: str, num_results: int = 8) -> str:
 
 @command(
     "google",
-    "Google Search",
-    '"query": "<query>"',
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_GOOGLE_SEARCH_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_GOOGLE_SEARCH_SIGNATURE),
     bool(CFG.google_api_key),
-    "Configure google_api_key.",
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_GOOGLE_SEARCH_DISABLE_REASON),
 )
 def google_official_search(query: str, num_results: int = 8) -> str | list[str]:
     """Return the results of a Google search using the official Google API
@@ -89,9 +96,9 @@ def google_official_search(query: str, num_results: int = 8) -> str | list[str]:
         ) == 403 and "invalid API key" in error_details.get("error", {}).get(
             "message", ""
         ):
-            return "Error: The provided Google API key is invalid or missing."
+            return PROMPTS.generate_prompt_string(PromptId.COMMAND_GOOGLE_SEARCH_ERROR_INVALID_API_KEY)
         else:
-            return f"Error: {e}"
+            return PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_ERROR, error=str(e))
     # google_result can be a list or a string depending on the search results
 
     # Return the list of search result URLs

@@ -5,16 +5,18 @@ import requests
 
 from autogpt.commands.command import command
 from autogpt.config import Config
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 
 CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
 
 
 @command(
     "read_audio_from_file",
-    "Convert Audio to text",
-    '"filename": "<filename>"',
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_AUDIO_TEXT_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_AUDIO_TEXT_SIGNATURE),
     CFG.huggingface_audio_to_text_model,
-    "Configure huggingface_audio_to_text_model.",
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_AUDIO_TEXT_DISABLE_REASON),
 )
 def read_audio_from_file(filename: str) -> str:
     """
@@ -58,4 +60,4 @@ def read_audio(audio: bytes) -> str:
     )
 
     text = json.loads(response.content.decode("utf-8"))["text"]
-    return f"The audio says: {text}"
+    return PROMPTS.generate_prompt_string(PromptId.COMMAND_AUDIO_TEXT_RESULT, text=text)

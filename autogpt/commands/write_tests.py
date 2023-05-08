@@ -4,13 +4,18 @@ from __future__ import annotations
 import json
 
 from autogpt.commands.command import command
+from autogpt.config import Config
 from autogpt.llm import call_ai_function
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
+
+CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
 
 
 @command(
     "write_tests",
-    "Write Tests",
-    '"code": "<full_code_string>", "focus": "<list_of_focus_areas>"',
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_WRITE_TESTS_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_WRITE_TESTS_SIGNATURE),
 )
 def write_tests(code: str, focus: list[str]) -> str:
     """
@@ -29,9 +34,6 @@ def write_tests(code: str, focus: list[str]) -> str:
         "def create_test_cases(code: str, focus: Optional[str] = None) -> str:"
     )
     args = [code, json.dumps(focus)]
-    description_string = (
-        "Generates test cases for the existing code, focusing on"
-        " specific areas if required."
-    )
+    description_string = PROMPTS.generate_prompt_string(PromptId.COMMAND_WRITE_TESTS_LONG_DESCRIPTION)
 
     return call_ai_function(function_string, args, description_string)

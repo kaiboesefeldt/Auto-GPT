@@ -7,9 +7,11 @@ from requests import Response
 
 from autogpt.config import Config
 from autogpt.processing.html import extract_hyperlinks, format_hyperlinks
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 from autogpt.url_utils.validators import validate_url
 
 CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
 
 session = requests.Session()
 session.headers.update({"User-Agent": CFG.user_agent})
@@ -37,17 +39,17 @@ def get_response(
 
         # Check if the response contains an HTTP error
         if response.status_code >= 400:
-            return None, f"Error: HTTP {str(response.status_code)} error"
+            return None, PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_ERROR, error=f"HTTP {str(response.status_code)} error")
 
         return response, None
     except ValueError as ve:
         # Handle invalid URL format
-        return None, f"Error: {str(ve)}"
+        return None, PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_ERROR, error=str(ve))
 
     except requests.exceptions.RequestException as re:
         # Handle exceptions related to the HTTP request
         #  (e.g., connection errors, timeouts, etc.)
-        return None, f"Error: {str(re)}"
+        return None, PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_ERROR, error=str(re))
 
 
 def scrape_text(url: str) -> str:
@@ -63,7 +65,7 @@ def scrape_text(url: str) -> str:
     if error_message:
         return error_message
     if not response:
-        return "Error: Could not get response"
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_BROWSE_WEBISTE_NO_RESPONSE)
 
     soup = BeautifulSoup(response.text, "html.parser")
 
@@ -91,7 +93,7 @@ def scrape_links(url: str) -> str | list[str]:
     if error_message:
         return error_message
     if not response:
-        return "Error: Could not get response"
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_BROWSE_WEBISTE_NO_RESPONSE)
     soup = BeautifulSoup(response.text, "html.parser")
 
     for script in soup(["script", "style"]):
@@ -106,7 +108,5 @@ def create_message(chunk, question):
     """Create a message for the user to summarize a chunk of text"""
     return {
         "role": "user",
-        "content": f'"""{chunk}""" Using the above text, answer the following'
-        f' question: "{question}" -- if the question cannot be answered using the'
-        " text, summarize the text.",
+        "content": PROMPTS.generate_prompt_string(PromptId.CREATE_MESSAGE_FOR_QUESTION, chunk=chunk, question=question)
     }

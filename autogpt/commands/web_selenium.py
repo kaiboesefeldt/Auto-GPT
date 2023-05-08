@@ -22,16 +22,18 @@ import autogpt.processing.text as summary
 from autogpt.commands.command import command
 from autogpt.config import Config
 from autogpt.processing.html import extract_hyperlinks, format_hyperlinks
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
 from autogpt.url_utils.validators import validate_url
 
 FILE_DIR = Path(__file__).parent.parent
 CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
 
 
 @command(
     "browse_website",
-    "Browse Website",
-    '"url": "<url>", "question": "<what_you_want_to_find_on_website>"',
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_BROWSE_WEBISTE_DESCRIPTION),
+    PROMPTS.generate_prompt_string(PromptId.COMMAND_BROWSE_WEBISTE_SIGNATURE),
 )
 @validate_url
 def browse_website(url: str, question: str) -> tuple[str, WebDriver]:
@@ -50,7 +52,7 @@ def browse_website(url: str, question: str) -> tuple[str, WebDriver]:
         # These errors are often quite long and include lots of context.
         # Just grab the first line.
         msg = e.msg.split("\n")[0]
-        return f"Error: {msg}", None
+        return PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_ERROR, error=msg), None
 
     add_header(driver)
     summary_text = summary.summarize_text(url, text, question, driver)
@@ -60,7 +62,7 @@ def browse_website(url: str, question: str) -> tuple[str, WebDriver]:
     if len(links) > 5:
         links = links[:5]
     close_browser(driver)
-    return f"Answer gathered from website: {summary_text} \n \n Links: {links}", driver
+    return PROMPTS.generate_prompt_string(PromptId.COMMAND_BROWSE_WEBSITE_ANSWER, summary_text=summary_text, links=str(links)), driver
 
 
 def scrape_text_with_selenium(url: str) -> tuple[WebDriver, str]:

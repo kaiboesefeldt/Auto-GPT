@@ -1,7 +1,13 @@
 """Web scraping commands using Playwright"""
 from __future__ import annotations
 
+from autogpt.config import Config
 from autogpt.logs import logger
+from autogpt.prompts.prompt_set import get_configured_prompt_set, PromptId
+
+CFG = Config()
+PROMPTS = get_configured_prompt_set(CFG)
+
 
 try:
     from playwright.sync_api import sync_playwright
@@ -41,7 +47,7 @@ def scrape_text(url: str) -> str:
             text = "\n".join(chunk for chunk in chunks if chunk)
 
         except Exception as e:
-            text = f"Error: {str(e)}"
+            text = PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_ERROR, error=str(e))
 
         finally:
             browser.close()
@@ -74,7 +80,7 @@ def scrape_links(url: str) -> str | list[str]:
             formatted_links = format_hyperlinks(hyperlinks)
 
         except Exception as e:
-            formatted_links = f"Error: {str(e)}"
+            formatted_links = PROMPTS.generate_prompt_string(PromptId.COMMAND_GENERAL_ERROR, error=str(e))
 
         finally:
             browser.close()
